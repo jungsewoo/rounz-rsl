@@ -142,28 +142,37 @@ if st.session_state['active_tab'] == "check":
                 
                 st.markdown(f"### **{store_display_name}**")
                 
-                percent = int((current_amt / target_amt) * 100) if target_amt > 0 else 100
-                display_percent = min(percent, 100)
-                bar_color = NAVER_GREEN if percent >= 100 else "#FF5252"
-                
-                st.markdown(f"""
-                <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                    <span style="font-size: 14px; font-weight: 700; color: #555;">혜택 달성 커트라인 대비 달성률</span>
-                    <span style="font-size: 24px; font-weight: 900; color: {bar_color};">{percent}%</span>
-                </div>
-                <div class="gauge-bg">
-                    <div class="gauge-fill" style="width: {display_percent}%; background-color: {bar_color};"></div>
-                </div>
-                """, unsafe_allow_html=True)
-
-                if user_rank <= target_to:
-                    st.success(f"🏆 현재 **{grade} 등급 {user_rank}위** | **[달성 혜택 1]** 안정권")
-                    st.markdown(f"커트라인 대비 **{current_amt - target_amt:,}원** 초과 달성 중입니다.")
-                elif user_rank <= display_limit:
-                    st.warning(f"🎯 현재 **{grade} 등급 {user_rank}위** | **[달성 혜택 1]** 커트라인 진입까지 **{target_amt - current_amt:,}원**")
+                # 💡 [디테일 끝판왕] 마이너스, 0원, 1원 이상 발주를 완벽하게 분리
+                if current_amt < 0:
+                    st.warning("🚨 **이전 반품/취소 내역이 반영되어 현재 3월 순수 발주액이 마이너스(-) 상태입니다.**\n\n추가 발주를 통해 실적을 플러스로 전환하시고 혜택 당첨의 주인공이 되어보세요!")
+                    
+                elif current_amt == 0:
+                    st.info("💡 **아직 3월 렌즈 발주 내역이 없습니다.**\n\n지금 바로 첫 발주를 시작하고 네이버 지역광고 상단노출 혜택을 잡아보세요!")
+                    
                 else:
-                    st.error(f"🚀 **[달성 혜택 2] 슈퍼 루키 특별 공략 구간**")
-                    st.info("💡 **누적 랭킹이 부담스러우신가요? 걱정 마세요!**\n\n나의 **3개월 평균 발주액**을 뛰어넘어 이번 달 가장 높은 성장률을 보여주시면 **[혜택 2: 스탠다드 패키지]**의 주인공이 되실 수 있습니다. 지금 바로 추가 발주하세요!")
+                    # 1원이라도 발주한 정상 매장 로직 (기존과 동일)
+                    percent = int((current_amt / target_amt) * 100) if target_amt > 0 else 100
+                    display_percent = min(percent, 100)
+                    bar_color = NAVER_GREEN if percent >= 100 else "#FF5252"
+                    
+                    st.markdown(f"""
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                        <span style="font-size: 14px; font-weight: 700; color: #555;">혜택 달성 커트라인 대비 달성률</span>
+                        <span style="font-size: 24px; font-weight: 900; color: {bar_color};">{percent}%</span>
+                    </div>
+                    <div class="gauge-bg">
+                        <div class="gauge-fill" style="width: {display_percent}%; background-color: {bar_color};"></div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    if user_rank <= target_to:
+                        st.success(f"🏆 현재 **{grade} 등급 {user_rank}위** | **[달성 혜택 1]** 안정권")
+                        st.markdown(f"커트라인 대비 **{current_amt - target_amt:,}원** 초과 달성 중입니다.")
+                    elif user_rank <= display_limit:
+                        st.warning(f"🎯 현재 **{grade} 등급 {user_rank}위** | **[달성 혜택 1]** 커트라인 진입까지 **{target_amt - current_amt:,}원**")
+                    else:
+                        st.error(f"🚀 **[달성 혜택 2] 슈퍼 루키 특별 공략 구간**")
+                        st.info("💡 **누적 랭킹이 부담스러우신가요? 걱정 마세요!**\n\n나의 **3개월 평균 발주액**을 뛰어넘어 이번 달 가장 높은 성장률을 보여주시면 **[혜택 2: 스탠다드 패키지]**의 주인공이 되실 수 있습니다. 지금 바로 추가 발주하세요!")
                 
                 st.markdown("---")
                 
@@ -238,6 +247,7 @@ elif st.session_state['active_tab'] == "benefit":
             </div>
         </div>
         """, unsafe_allow_html=True)
+
 
 
 

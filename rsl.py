@@ -1,35 +1,36 @@
 import streamlit as st
 import pandas as pd
-import os
 import datetime
 
-# --- 프로모션 설정 (등급별 T/O 및 노출 배수 커트라인) ---
+# --- 프로모션 설정 ---
 TO_MAP = {"VIP": 6, "GOLD": 4, "SILVER": 10}
 LIMIT_MAP = {"VIP": 15, "GOLD": 10, "SILVER": 25}
 # -----------------------------------------------------
 
 st.set_page_config(page_title="2026 3~4월 렌즈프로모션 조회", page_icon="🌸", layout="wide")
 
-FILE_PATH = '매장실적데이터.xlsx'
-
-@st.cache_data
+# 💡 구글 시트 데이터를 10분 단위로 새로고침하여 가져옵니다.
+@st.cache_data(ttl=600)
 def load_data():
-    return pd.read_excel(FILE_PATH)
+    sheet_url = st.secrets["SHEET_URL"]
+    # 공유 링크를 판다스가 읽을 수 있는 CSV 다운로드 링크로 자동 변환
+    csv_url = sheet_url.replace('/edit?usp=sharing', '/export?format=csv').replace('/edit', '/export?format=csv')
+    return pd.read_csv(csv_url)
 
 try:
     df = load_data()
-    mtime = os.path.getmtime(FILE_PATH)
-    dt_mtime = datetime.datetime.fromtimestamp(mtime)
-    update_time_str = dt_mtime.strftime("%m월 %d일 기준")
+    # 데이터 업데이트 시간은 구글 시트를 마지막으로 읽어온 시간으로 자동 표시됩니다.
+    update_time_str = datetime.datetime.now().strftime("%m월 %d일 %H:%M 기준")
 except Exception as e:
-    st.error("⚠️ 데이터 파일을 찾을 수 없습니다. '매장실적데이터.xlsx' 파일을 확인해주세요.")
+    st.error("⚠️ 구글 시트 데이터를 불러올 수 없습니다. 스트림릿 Secrets 설정이나 시트 공유 상태를 확인해주세요.")
     st.stop()
 
+# 결측치 0으로 채우기
 if '26/03' in df.columns:
     df['26/03'] = df['26/03'].fillna(0)
 
 if '프로모션 기준금액(최근3개월)' not in df.columns:
-    st.error("⚠️ 엑셀 파일에 '프로모션 기준금액(최근3개월)' 열(Column)이 없습니다.")
+    st.error("⚠️ 데이터에 '프로모션 기준금액(최근3개월)' 열이 없습니다.")
     st.stop()
 else:
     df['프로모션 기준금액(최근3개월)'] = df['프로모션 기준금액(최근3개월)'].fillna(0)
@@ -80,17 +81,13 @@ if menu == "📊 우리 매장 실적 조회":
                 
                 st.markdown(f"### 👤 **{store_name}** 원장님 현황")
                 
-                # 게이지바용 퍼센트 계산 로직
-                # 💡 게이지바용 퍼센트 및 커스텀 디자인 세팅
+                # 게이지바용 퍼센트 및 커스텀 디자인 세팅
                 if target_amt > 0:
                     percent = int((current_amt / target_amt) * 100)
                 else:
                     percent = 100
                 
-                # 게이지바가 100%를 넘어도 꽉 차보이게 처리
                 display_percent = min(percent, 100)
-                
-                # 초록권(100% 이상)과 노랑권(100% 미만)의 게이지바 색상 다르게 (그라데이션)
                 bar_color = "linear-gradient(90deg, #00b09b, #96c93d)" if percent >= 100 else "linear-gradient(90deg, #ff8a00, #e52e71)"
                 
                 custom_gauge_html = f"""
@@ -106,11 +103,9 @@ if menu == "📊 우리 매장 실적 조회":
                     st.info(f"축하합니다! 현재 **[혜택 1: 올인원 풀케어] 당첨 안정권**입니다. 밑에서 무서운 속도로 추격 중이니 마감일까지 이 페이스를 꼭 유지해 주세요!")
                     
                     st.markdown("---")
-                    
-                    # 💡 임팩트 게이지바 & 문구 적용 (안정권)
                     st.markdown(custom_gauge_html, unsafe_allow_html=True)
                     st.markdown(f"**🎉 목표 달성! 당첨 합격선을 <span style='color:#00b09b;'>{current_amt - target_amt:,}원</span> 초과했습니다.**", unsafe_allow_html=True)
-                    st.write("") # 간격 띄우기
+                    st.write("") 
                     
                     col1, col2, col3 = st.columns(3)
                     col1.metric("🏅 위탁 등급", grade)
@@ -123,11 +118,9 @@ if menu == "📊 우리 매장 실적 조회":
                     st.error(f"원장님, 당첨 합격선({target_to}위) 진입까지 딱 **[{gap:,}원]** 모자랍니다! 이번 주 추가 발주 한 번이면 순위가 단번에 뒤집힙니다. 지금 바로 발주하세요!")
                     
                     st.markdown("---")
-                    
-                    # 💡 임팩트 게이지바 & 문구 적용 (가시권)
                     st.markdown(custom_gauge_html, unsafe_allow_html=True)
                     st.markdown(f"**🔥 당첨권 진입까지 딱 <span style='color:#ff8a00;'>{gap:,}원</span> 부족합니다! 조금만 더 텐션을 올려주세요!**", unsafe_allow_html=True)
-                    st.write("") # 간격 띄우기
+                    st.write("") 
                     
                     col1, col2, col3 = st.columns(3)
                     col1.metric("🏅 위탁 등급", grade)
@@ -139,7 +132,6 @@ if menu == "📊 우리 매장 실적 조회":
                     st.warning(f"누적 매출 랭킹이 부담스러우신가요? 걱정 마세요! 이번 달 발주를 확 늘려주시면 **[혜택 2: 전월 대비 급성장 트랙]** 당첨이 유력해집니다. 아래 3개월 평균 발주액을 뛰어넘어 보세요!")
                     
                     st.markdown("---")
-                    # 하위권은 기존대로 3개월 평균 노출
                     col1, col2, col3 = st.columns(3)
                     col1.metric("🏅 위탁 등급", grade)
                     col2.metric("📊 나의 3개월 평균액", f"{avg_3month:,}원")
@@ -189,7 +181,6 @@ elif menu == "🎁 프로모션 혜택 안내":
     
     st.markdown("---")    
 
-    # 💡 아코디언 UI 및 텍스트 변경 완료
     with st.expander("📌 어떻게 뽑나요? (총 60곳 한정)"):
         st.success("대형 매장만 유리한가요? 절대 아닙니다! 체급에 상관없이 두 가지 부문으로 공평하게 뽑습니다.")
         

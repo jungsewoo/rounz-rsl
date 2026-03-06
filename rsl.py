@@ -202,7 +202,7 @@ elif st.session_state['active_tab'] == "benefit":
             <div style="font-size: 18px; font-weight: 800; color: #111;">🎁 달성 혜택 2: 스탠다드 패키지</div>
             <div style="font-size: 12px; font-weight: 800; color: #2E5BFF; background-color: #E6F0FF; padding: 3px 8px; border-radius: 6px;">총 40곳 한정</div>
         </div>
-        <div style="font-size: 13px; color: #2E5BFF; font-weight: 700; margin-bottom: 15px;">전월 대비 성장률 우수 매장 선정 (슈퍼 루키)</div>
+        <div style="font-size: 13px; color: #2E5BFF; font-weight: 700; margin-bottom: 15px;">최근3개월 대비 성장률 우수 매장 선정 (슈퍼 루키)</div>
         <ul style="font-size: 15px; color: #444; padding-left: 18px; line-height: 1.8;">
             <li><b>네이버 플레이스 상단노출 광고대행(비용 안경원 부담)</b></li>
             <li>네이버 플레이스 점검 및 최적화 세팅</li>
@@ -228,3 +228,4 @@ elif st.session_state['active_tab'] == "benefit":
             </div>
         </div>
         """, unsafe_allow_html=True)
+

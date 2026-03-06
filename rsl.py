@@ -180,7 +180,8 @@ if st.session_state['active_tab'] == "check":
 # [화면 2] 달성 혜택 안내
 # ==========================================
 elif st.session_state['active_tab'] == "benefit":
-    st.markdown("#### **🏆 구간별 달성 혜택 상세**")
+    <div class="naver-logo">N</div>
+    st.markdown("#### **구간별 달성 혜택 상세**")
     st.write("")
     
     st.markdown(f"""
@@ -228,5 +229,6 @@ elif st.session_state['active_tab'] == "benefit":
             </div>
         </div>
         """, unsafe_allow_html=True)
+
 
 

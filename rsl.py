@@ -185,7 +185,10 @@ elif st.session_state['active_tab'] == "benefit":
     
     st.markdown(f"""
     <div class="p-card" style="border-left: 5px solid {NAVER_GREEN};">
-        <div style="font-size: 18px; font-weight: 800; color: #111; margin-bottom: 5px;">🎁 달성 혜택 1: 올인원 패키지</div>
+        <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 5px;">
+            <div style="font-size: 18px; font-weight: 800; color: #111;">🎁 달성 혜택 1: 올인원 패키지</div>
+            <div style="font-size: 12px; font-weight: 800; color: #FF4B4B; background-color: #FFEAEA; padding: 3px 8px; border-radius: 6px;">총 20곳 한정</div>
+        </div>
         <div style="font-size: 13px; color: {NAVER_GREEN}; font-weight: 700; margin-bottom: 15px;">매출 상위매장 선정</div>
         <ul style="font-size: 15px; color: #444; padding-left: 18px; line-height: 1.8;">
             <li><b>네이버 플레이스 상단노출 광고대행 및 광고비 지원</b> (2개월)</li>
@@ -195,7 +198,10 @@ elif st.session_state['active_tab'] == "benefit":
         </ul>
     </div>
     <div class="p-card" style="border-left: 5px solid #2E5BFF;">
-        <div style="font-size: 18px; font-weight: 800; color: #111; margin-bottom: 5px;">🎁 달성 혜택 2: 스탠다드 패키지</div>
+        <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 5px;">
+            <div style="font-size: 18px; font-weight: 800; color: #111;">🎁 달성 혜택 2: 스탠다드 패키지</div>
+            <div style="font-size: 12px; font-weight: 800; color: #2E5BFF; background-color: #E6F0FF; padding: 3px 8px; border-radius: 6px;">총 40곳 한정</div>
+        </div>
         <div style="font-size: 13px; color: #2E5BFF; font-weight: 700; margin-bottom: 15px;">전월 대비 성장률 우수 매장 선정 (슈퍼 루키)</div>
         <ul style="font-size: 15px; color: #444; padding-left: 18px; line-height: 1.8;">
             <li><b>네이버 플레이스 상단노출 광고대행(비용 안경원 부담)</b></li>
@@ -207,7 +213,6 @@ elif st.session_state['active_tab'] == "benefit":
     
     st.markdown("---")
     
-    # 💡 깨짐 현상을 복구하고, 내부 텍스트를 고급스러운 배지형 리스트로 변경
     with st.expander("📌 당첨 및 선정 기준 상세 가이드"):
         st.markdown(f"""
         <div style="padding: 5px 0;">

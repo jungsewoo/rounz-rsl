@@ -84,7 +84,7 @@ tabs = st.tabs(tab_titles)
 with tabs[0]:
     user_input = st.text_input("🏢 사업자번호 입력", placeholder="안경원 사업자번호를 숫자만 입력해주세요 ", key="search_bar", label_visibility="collapsed")
     
-    if st.button("내역 확인하기", use_container_width=True):
+    if st.button("조회하기", use_container_width=True):
         if user_input:
             search_num = user_input.replace('-', '').strip()
             result = df[df['사업자번호'] == search_num]
@@ -166,21 +166,22 @@ with tabs[1]:
     
     st.markdown(f"""
     <div class="p-card" style="border-left: 5px solid {NAVER_GREEN};">
-        <div style="font-size: 18px; font-weight: 800; color: #111; margin-bottom: 5px;">🎁 달성 혜택 1: 올인원 풀케어</div>
-        <div style="font-size: 13px; color: {NAVER_GREEN}; font-weight: 700; margin-bottom: 15px;">누적 실적 상위 매장 선정 (등급별 T/O 배정)</div>
+        <div style="font-size: 18px; font-weight: 800; color: #111; margin-bottom: 5px;">🎁 달성 혜택 1: 올인원 패키지</div>
+        <div style="font-size: 13px; color: {NAVER_GREEN}; font-weight: 700; margin-bottom: 15px;">매출 상위매장 선정</div>
         <ul style="font-size: 15px; color: #444; padding-left: 18px; line-height: 1.8;">
-            <li><b>네이버 검색 상단 노출 광고비 전액 지원</b> (2개월)</li>
-            <li>네이버 플레이스 전문가 최적화 1:1 세팅</li>
-            <li>1:1 전담 마케터 배정 및 밀착 관리</li>
+            <li><b>네이버 플레이스 상단노출 광고대행 및 광고비 지원</b> (2개월)</li>
+            <li>네이버 플레이스 점검 및 최적화 세팅</li>
+            <li>안경원 마케팅 상담채널 제공</li>
+            <li>네이버 성과관리 리포트 제공</li>
         </ul>
     </div>
     <div class="p-card" style="border-left: 5px solid #2E5BFF;">
-        <div style="font-size: 18px; font-weight: 800; color: #111; margin-bottom: 5px;">🎁 달성 혜택 2: 마스터 세팅 & 광고 대행</div>
+        <div style="font-size: 18px; font-weight: 800; color: #111; margin-bottom: 5px;">🎁 달성 혜택 2: 스탠다드 패키지</div>
         <div style="font-size: 13px; color: #2E5BFF; font-weight: 700; margin-bottom: 15px;">전월 대비 성장률 우수 매장 선정 (슈퍼 루키)</div>
         <ul style="font-size: 15px; color: #444; padding-left: 18px; line-height: 1.8;">
-            <li><b>네이버 파워링크 광고 상단 노출 무료 세팅 및 대행</b></li>
-            <li>네이버 플레이스 전문가 최적화 세팅 (무료)</li>
-            <li>1:1 전담 마케터 배정 및 광고 효율 분석 지원</li>
+            <li><b>네이버 플레이스 상단노출 광고대행(비용 안경원 부담)</b></li>
+            <li>네이버 플레이스 점검 및 최적화 세팅</li>
+            <li>안경원 마케팅 상담채널 제공</li>
         </ul>
     </div>
     """, unsafe_allow_html=True)
@@ -188,7 +189,8 @@ with tabs[1]:
     st.markdown("---")
     with st.expander("📌 당첨 및 선정 기준 상세 가이드"):
         st.markdown("""
-        1. **누적 실적 랭킹:** 꾸준히 많은 발주를 기록 중인 매장을 등급별 상위 T/O에 맞춰 선정합니다.
-        2. **전월 대비 급성장:** 규모와 상관없이, 이번 달 발주 성장이 가장 뚜렷한 매장을 '슈퍼 루키'로 선정합니다.
+        달성혜택 1. **누적 실적 랭킹:** 꾸준히 많은 발주를 기록 중인 매장을 등급별 상위 T/O에 맞춰 선정합니다.
+        달성혜택 2. **전월 대비 급성장:** 규모와 상관없이, 이번 달 발주 성장이 가장 뚜렷한 매장을 '슈퍼 루키'로 선정합니다.
         """)
+
 

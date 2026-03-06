@@ -82,7 +82,7 @@ tabs = st.tabs(tab_titles)
 # [탭 1] 프로모션 달성 확인하기
 # ==========================================
 with tabs[0]:
-    user_input = st.text_input("🏢 사업자번호 입력", placeholder="숫자만 입력해 주세요", key="search_bar", label_visibility="collapsed")
+    user_input = st.text_input("🏢 사업자번호 입력", placeholder="안경원 사업자번호를 숫자만 입력해주세요 ", key="search_bar", label_visibility="collapsed")
     
     if st.button("내역 확인하기", use_container_width=True):
         if user_input:
@@ -191,3 +191,4 @@ with tabs[1]:
         1. **누적 실적 랭킹:** 꾸준히 많은 발주를 기록 중인 매장을 등급별 상위 T/O에 맞춰 선정합니다.
         2. **전월 대비 급성장:** 규모와 상관없이, 이번 달 발주 성장이 가장 뚜렷한 매장을 '슈퍼 루키'로 선정합니다.
         """)
+

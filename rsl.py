@@ -189,7 +189,7 @@ elif st.session_state['active_tab'] == "benefit":
             <div style="font-size: 18px; font-weight: 800; color: #111;">🎁 달성 혜택 1: 올인원 패키지</div>
             <div style="font-size: 12px; font-weight: 800; color: #FF4B4B; background-color: #FFEAEA; padding: 3px 8px; border-radius: 6px;">총 20곳 한정</div>
         </div>
-        <div style="font-size: 13px; color: {NAVER_GREEN}; font-weight: 700; margin-bottom: 15px;">매출 상위매장 선정</div>
+        <div style="font-size: 13px; color: {NAVER_GREEN}; font-weight: 700; margin-bottom: 15px;">약정 등급별 매출 상위매장 선정</div>
         <ul style="font-size: 15px; color: #444; padding-left: 18px; line-height: 1.8;">
             <li><b>네이버 플레이스 상단노출 광고대행 및 광고비 지원</b> (2개월)</li>
             <li>네이버 플레이스 점검 및 최적화 세팅</li>
@@ -228,4 +228,5 @@ elif st.session_state['active_tab'] == "benefit":
             </div>
         </div>
         """, unsafe_allow_html=True)
+
 

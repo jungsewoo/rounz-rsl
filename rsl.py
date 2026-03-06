@@ -6,20 +6,44 @@ import datetime
 TO_MAP = {"VIP": 6, "GOLD": 4, "SILVER": 10}
 LIMIT_MAP = {"VIP": 15, "GOLD": 10, "SILVER": 25}
 NAVER_GREEN = "#03C75A"
-DEEP_GRAY = "#333333"
 
 st.set_page_config(page_title="2026 라운즈 프로모션", page_icon="🔍", layout="centered")
 
-# --- 2. 프리미엄 CSS (줄간격 및 카드 디자인 최적화) ---
+# --- 2. 프리미엄 CSS (헤더 및 탭 디자인 완벽 커스텀) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap');
     html, body, [class*="css"] {{ font-family: 'Pretendard', sans-serif; line-height: 1.5; color: #333; }}
     
-    /* 헤더 및 아이콘 */
-    .header-container {{ padding: 25px 0; border-bottom: 2px solid {NAVER_GREEN}; margin-bottom: 25px; }}
-    .naver-logo {{ font-size: 32px; font-weight: 900; color: {NAVER_GREEN}; vertical-align: middle; margin-right: 15px; }}
-    .main-title {{ font-size: 20px; font-weight: 700; color: #111; display: inline-block; vertical-align: middle; line-height: 1.3; }}
+    /* 💡 개선된 헤더 및 아이콘 */
+    .header-container {{ padding: 15px 0 25px 0; border-bottom: 2px solid {NAVER_GREEN}; margin-bottom: 25px; }}
+    .sub-title {{ font-size: 15px; font-weight: 700; color: {NAVER_GREEN}; margin-bottom: 8px; letter-spacing: -0.5px; }}
+    .main-title {{ font-size: 24px; font-weight: 800; color: #111; line-height: 1.35; letter-spacing: -0.5px; }}
+    .naver-logo {{ font-size: 28px; font-weight: 900; color: {NAVER_GREEN}; vertical-align: baseline; margin-right: 6px; }}
+    
+    /* 💡 빨간 버튼을 완벽한 탭 디자인으로 변경하는 마법 */
+    div[data-testid="column"] div.stButton > button {{
+        border-radius: 8px 8px 0 0 !important;
+        height: 50px;
+        font-weight: 600;
+        font-size: 16px;
+        background-color: #F8F9FA !important;
+        color: #868E96 !important;
+        border: 1px solid #EAECEF !important;
+        border-bottom: 2px solid #EAECEF !important;
+        transition: all 0.2s;
+    }}
+    /* 활성화된 탭(Primary) 스타일: 네이버 그린 포인트 */
+    div[data-testid="column"] div.stButton > button[kind="primary"] {{
+        background-color: #FFFFFF !important;
+        color: {NAVER_GREEN} !important;
+        border: 1px solid #EAECEF !important;
+        border-bottom: 3px solid {NAVER_GREEN} !important;
+        font-weight: 800;
+    }}
+    div[data-testid="column"] div.stButton > button:hover {{
+        color: {NAVER_GREEN} !important;
+    }}
     
     /* 프리미엄 카드 */
     .p-card {{ background: white; padding: 20px; border-radius: 12px; border: 1px solid #EAECEF; box-shadow: 0 2px 8px rgba(0,0,0,0.02); margin-bottom: 15px; }}
@@ -33,11 +57,9 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # --- 3. 데이터 로드 및 탭 제어 로직 ---
-# 💡 화면 이동을 위한 세션 상태 생성
 if 'active_tab' not in st.session_state:
     st.session_state['active_tab'] = "check"
 
-# 💡 하단 혜택 버튼 클릭 시 실행될 함수
 def go_to_benefit():
     st.session_state['active_tab'] = "benefit"
 
@@ -64,18 +86,20 @@ except:
     st.error("데이터를 불러올 수 없습니다.")
     st.stop()
 
-# --- 4. 메인 헤더 ---
+# --- 4. 💡 개선된 메인 헤더 ---
 st.markdown(f'''
     <div class="header-container">
-        <span class="naver-logo">N</span>
-        <div class="main-title">라운즈 3~4월 렌즈 프로모션 <br/>네이버 지역광고 상단노출,<br/>라운즈에서 해드립니다.</div>
+        <div class="sub-title">🌸 라운즈 3~4월 렌즈 프로모션</div>
+        <div class="main-title">
+            <span class="naver-logo">N</span>네이버 지역광고 상단노출,<br/>라운즈에서 해드립니다.
+        </div>
     </div>
 ''', unsafe_allow_html=True)
 
-# --- 5. 내비게이션 (Tabs 대체 -> 버튼형 구조) ---
+# --- 5. 내비게이션 (진짜 탭처럼 보이게 디자인된 버튼) ---
 col_nav1, col_nav2 = st.columns(2)
 with col_nav1:
-    if st.button("📊 프로모션 달성 확인하기", use_container_width=True, type="primary" if st.session_state['active_tab'] == "check" else "secondary"):
+    if st.button("📊 달성 내역 확인", use_container_width=True, type="primary" if st.session_state['active_tab'] == "check" else "secondary"):
         st.session_state['active_tab'] = "check"
         st.rerun()
 with col_nav2:
@@ -142,12 +166,11 @@ if st.session_state['active_tab'] == "check":
                 
                 st.markdown("---")
                 
-                # 💳 [1번 로직] 그리드 데이터 (조건부 노출 반영)
+                # 💳 조건부 노출 데이터 카드
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     st.markdown(f'<div class="p-card"><div class="p-label">위탁 등급</div><div class="p-value">{grade}</div></div>', unsafe_allow_html=True)
                 with col2:
-                    # 루키(순위 밖)는 평균액, 나머지는 합격선 노출
                     if user_rank > display_limit:
                         label, val = "나의 3개월 평균", avg_3month
                     else:
@@ -157,7 +180,6 @@ if st.session_state['active_tab'] == "check":
                     st.markdown(f'<div class="p-card"><div class="p-label">3월 발주액({update_time_str})</div><div class="p-value">{current_amt:,}원</div></div>', unsafe_allow_html=True)
 
                 st.write("")
-                # 💡 [해결 포인트] 혜택 페이지 이동 버튼 활성화
                 st.info("💡 지금 바로 하단의 버튼을 눌러 우리 매장이 받을 수 있는 상세 혜택을 확인하세요!")
                 if st.button("🎁 이번 달 상세 혜택 보러가기", on_click=go_to_benefit, use_container_width=True):
                     pass

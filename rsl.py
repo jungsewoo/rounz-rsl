@@ -73,30 +73,32 @@ st.markdown(f'''
     </div>
 ''', unsafe_allow_html=True)
 
-# --- 5. 내비게이션 (Tabs 대신 State 기반으로 변경) ---
-# 💡 버튼 클릭으로 화면을 전환하기 위해 세션 상태를 사용합니다.
+# --- 5. 내비게이션 (Tabs 삭제 -> 세션 상태 기반으로 교체) ---
+# 💡 화면 전환을 위해 탭 대신 버튼 메뉴를 사용합니다.
 if 'active_tab' not in st.session_state:
-    st.session_state['active_tab'] = "check"
+    st.session_state['active_tab'] = 0  # 0: 조회 페이지, 1: 혜택 페이지
 
-# 상단 메뉴 구성 (클릭 시 페이지 전환)
-col_nav1, col_nav2 = st.columns(2)
-with col_nav1:
+# 상단 메뉴 버튼 (탭처럼 보이게 디자인)
+col_m1, col_m2 = st.columns(2)
+with col_m1:
+    # 조회하기 페이지로 이동하는 버튼
     if st.button("📊 프로모션 달성 확인하기", use_container_width=True, 
-                 type="primary" if st.session_state['active_tab'] == "check" else "secondary"):
-        st.session_state['active_tab'] = "check"
+                 type="primary" if st.session_state['active_tab'] == 0 else "secondary"):
+        st.session_state['active_tab'] = 0
         st.rerun()
-with col_nav2:
+with col_m2:
+    # 혜택 안내 페이지로 이동하는 버튼
     if st.button("🎁 달성 혜택 안내", use_container_width=True,
-                 type="primary" if st.session_state['active_tab'] == "benefit" else "secondary"):
-        st.session_state['active_tab'] = "benefit"
+                 type="primary" if st.session_state['active_tab'] == 1 else "secondary"):
+        st.session_state['active_tab'] = 1
         st.rerun()
 
 st.markdown("---")
 
 # ==========================================
-# [화면 1] 프로모션 달성 확인하기
+# [화면 1] 프로모션 달성 확인하기 (active_tab == 0 일 때)
 # ==========================================
-if st.session_state['active_tab'] == "check":
+if st.session_state['active_tab'] == 0:
     user_input = st.text_input("🏢 사업자번호 입력", placeholder="안경원 사업자번호를 숫자만 입력해주세요 ", key="search_bar", label_visibility="collapsed")
     
     if st.button("조회하기", use_container_width=True):
@@ -106,7 +108,7 @@ if st.session_state['active_tab'] == "check":
             
             if not result.empty:
                 r = result.iloc[0]
-                store_display_name = f"{r['매장명']} 안경원" # '원장님'에서 '안경원'으로 예우
+                store_display_name = f"{r['매장명']} 안경원"
                 grade = r['등급']
                 current_amt = int(r['26/03'])
                 target_col = '프로모션 기준금액(최근3개월)'
@@ -150,11 +152,12 @@ if st.session_state['active_tab'] == "check":
                 
                 st.markdown("---")
                 
-                # 💳 그리드 데이터 (조건부 노출 반영)
+                # 💳 [1번 로직 적용] 그리드 데이터 (조건부 노출)
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     st.markdown(f'<div class="p-card"><div class="p-label">위탁 등급</div><div class="p-value">{grade}</div></div>', unsafe_allow_html=True)
                 with col2:
+                    # 루키 매장(순위 밖)은 평균액, 나머지는 합격선 노출
                     if user_rank > display_limit:
                         label, val = "나의 3개월 평균", avg_3month
                     else:
@@ -164,21 +167,22 @@ if st.session_state['active_tab'] == "check":
                     st.markdown(f'<div class="p-card"><div class="p-label">3월 발주액({update_time_str})</div><div class="p-value">{current_amt:,}원</div></div>', unsafe_allow_html=True)
 
                 st.write("")
-                # 💡 [해결 포인트] 버튼 클릭 시 세션 상태를 변경하여 페이지 이동
+                # 💡 [해결 포인트] 버튼 클릭 시 세션 상태를 바꿔서 페이지 이동
                 st.info("💡 지금 바로 상세 혜택을 확인해 보세요!")
                 if st.button("🎁 이번 달 상세 혜택 보러가기", use_container_width=True):
-                    st.session_state['active_tab'] = "benefit"
-                    st.rerun()
+                    st.session_state['active_tab'] = 1  # 혜택 페이지 값으로 변경
+                    st.rerun()  # 화면 새로고침해서 페이지 전환
             else:
                 st.error("사업자번호를 정확히 입력했는지 확인해 주세요.")
 
 # ==========================================
-# [화면 2] 달성 혜택 안내
+# [화면 2] 달성 혜택 안내 (active_tab == 1 일 때)
 # ==========================================
-elif st.session_state['active_tab'] == "benefit":
+elif st.session_state['active_tab'] == 1:
     st.markdown("#### **🏆 구간별 달성 혜택 상세**")
     st.write("")
     
+    # 담당자님이 수정하신 혜택 내용 그대로 반영
     st.markdown(f"""
     <div class="p-card" style="border-left: 5px solid {NAVER_GREEN};">
         <div style="font-size: 18px; font-weight: 800; color: #111; margin-bottom: 5px;">🎁 달성 혜택 1: 올인원 패키지</div>
@@ -204,16 +208,7 @@ elif st.session_state['active_tab'] == "benefit":
     st.markdown("---")
     with st.expander("📌 당첨 및 선정 기준 상세 가이드"):
         st.markdown("""
-        **달성 혜택 1** : 꾸준히 많은 발주를 기록 중인 매장을 등급별 상위 T/O에 맞춰 선정합니다.(**누적 실적 랭킹**)
+        달성 혜택 1 : 꾸준히 많은 발주를 기록 중인 매장을 등급별 상위 T/O에 맞춰 선정합니다.(**누적 실적 랭킹**)
         
-        **달성 혜택 2** : 규모와 상관없이, 이번 달 발주 성장이 가장 뚜렷한 매장을 '슈퍼 루키'로 선정합니다.(**전월 대비 급성장**)
+        달성 혜택 2 : 규모와 상관없이, 이번 달 발주 성장이 가장 뚜렷한 매장을 '슈퍼 루키'로 선정합니다.(**전월 대비 급성장**)
         """)
-
-
-
-
-
-
-
-
-

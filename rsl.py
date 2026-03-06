@@ -15,26 +15,33 @@ def load_data():
     csv_url = sheet_url.replace('/edit?usp=sharing', '/export?format=csv').replace('/edit', '/export?format=csv')
     df = pd.read_csv(csv_url)
     
-    # 💡 데이터 전처리: 제목 공백 제거 및 사업자번호에서 하이픈 제거
+    # 제목 공백 제거
     df.columns = [c.strip() for c in df.columns]
+    
+    # 💡 [핵심] 숫자 열 전처리: 콤마(,)와 '원' 제거 후 진짜 숫자로 변환
+    target_col = '프로모션 기준금액(최근3개월)'
+    numeric_cols = ['26/03', target_col]
+    
+    for col in numeric_cols:
+        if col in df.columns:
+            # 문자열로 변환 -> 콤마 제거 -> 숫자로 변환 (에러 시 0처리)
+            df[col] = df[col].astype(str).str.replace(',', '').str.replace('원', '').str.strip()
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
+
+    # 사업자번호 하이픈 제거
     if '사업자번호' in df.columns:
-        # 데이터에 있는 하이픈을 모두 제거하고 문자열로 통일
         df['사업자번호'] = df['사업자번호'].astype(str).str.replace('-', '', regex=False).str.strip()
     
     return df
 
 try:
     df = load_data()
-    update_time_str = datetime.datetime.now().strftime("%m월 %d일 %H:%M 기준")
+    # 한국 시간 기준 업데이트 (서버 시간 보정)
+    now = datetime.datetime.now() + datetime.timedelta(hours=9)
+    update_time_str = now.strftime("%m월 %d일 %H:%M 기준")
 except Exception as e:
     st.error("⚠️ 데이터를 불러올 수 없습니다. 시트 공유 상태나 Secrets 설정을 확인해주세요.")
     st.stop()
-
-# 결측치 0으로 채우기
-target_col = '프로모션 기준금액(최근3개월)'
-for col in ['26/03', target_col]:
-    if col in df.columns:
-        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
 
 # --- 사이드바 메뉴 ---
 st.sidebar.title("🌸 라운즈 프로모션")
@@ -49,12 +56,10 @@ st.markdown("---")
 if menu == "📊 우리 매장 실적 조회":
     st.markdown("#### 우리 매장 무료 마케팅 혜택 당첨 확인하기")
     
-    # 💡 하이픈 없이 입력하도록 가이드 및 예시 변경
     user_input = st.text_input("🏢 매장 사업자번호를 입력해주세요.", placeholder="하이픈(-) 없이 숫자만 입력 (예: 1234567890)")
 
     if st.button("조회하기", use_container_width=True):
         if user_input:
-            # 💡 입력값에서도 하이픈을 제거하여 데이터와 비교
             search_num = user_input.replace('-', '').strip()
             result = df[df['사업자번호'] == search_num]
             
@@ -62,28 +67,30 @@ if menu == "📊 우리 매장 실적 조회":
                 store_name = result['매장명'].values[0]
                 grade = result['등급'].values[0]
                 current_amt = int(result['26/03'].values[0])
+                target_col = '프로모션 기준금액(최근3개월)'
                 avg_3month = int(result[target_col].values[0])
                 
-                # 순위 로직
+                # 순위 계산
                 grade_df = df[df['등급'] == grade].copy()
                 grade_df['내등급순위'] = grade_df['26/03'].rank(method='min', ascending=False)
                 user_rank = int(grade_df[grade_df['사업자번호'] == search_num]['내등급순위'].values[0])
                 
                 target_to = TO_MAP.get(grade, 10)
                 display_limit = LIMIT_MAP.get(grade, 25)
+                
                 grade_sorted = grade_df.sort_values(by='26/03', ascending=False).reset_index(drop=True)
                 target_idx = min(target_to, len(grade_sorted)) - 1
                 target_amt = int(grade_sorted.loc[target_idx, '26/03']) if len(grade_sorted) > 0 else 0
                 
                 st.markdown(f"### 👤 **{store_name}** 원장님 현황")
                 
-                # 게이지바 디자인
+                # 게이지바 및 퍼센트 계산
                 percent = int((current_amt / target_amt) * 100) if target_amt > 0 else 100
                 display_percent = min(percent, 100)
                 bar_color = "linear-gradient(90deg, #00b09b, #96c93d)" if percent >= 100 else "linear-gradient(90deg, #ff8a00, #e52e71)"
                 
-                custom_gauge_html = f"""
-                <div style="width: 100%; background-color: #e6e6e6; border-radius: 20px; margin-top: 10px; margin-bottom: 5px;">
+                gauge_html = f"""
+                <div style="width: 100%; background-color: #f0f2f6; border-radius: 20px; margin-top: 10px;">
                     <div style="width: {display_percent}%; height: 26px; background: {bar_color}; border-radius: 20px; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; color: white; font-weight: 900; font-size: 14px;">
                         {percent}%
                     </div>
@@ -92,14 +99,12 @@ if menu == "📊 우리 매장 실적 조회":
 
                 if user_rank <= target_to:
                     st.success(f"🟢 **당첨 안정권 진입! (현재 {grade} {user_rank}위)**")
-                    st.info("축하합니다! 현재 **[혜택 1: 올인원 풀케어] 당첨 안정권**입니다.")
-                    st.markdown(custom_gauge_html, unsafe_allow_html=True)
+                    st.markdown(gauge_html, unsafe_allow_html=True)
                     st.markdown(f"**🎉 목표 달성! 현재 당첨 합격선을 <span style='color:#00b09b;'>{current_amt - target_amt:,}원</span> 초과했습니다.**", unsafe_allow_html=True)
                 elif user_rank <= display_limit:
                     gap = target_amt - current_amt
                     st.warning(f"🟡 **당첨 가시권! (현재 {grade} {user_rank}위)**")
-                    st.error(f"원장님, 당첨 합격선({target_to}위) 진입까지 딱 **[{gap:,}원]** 모자랍니다!")
-                    st.markdown(custom_gauge_html, unsafe_allow_html=True)
+                    st.markdown(gauge_html, unsafe_allow_html=True)
                     st.markdown(f"**🔥 당첨권 진입까지 딱 <span style='color:#ff8a00;'>{gap:,}원</span> 부족합니다!**", unsafe_allow_html=True)
                 else:
                     st.error("🚀 **슈퍼 루키 부문 (역전의 기회!)**")
@@ -161,3 +166,4 @@ elif menu == "🎁 프로모션 혜택 안내":
         ---
         💡 왼쪽 메뉴의 **[📊 우리 매장 실적 조회]**를 눌러 실시간 당첨 합격선을 확인하시고, 지금 바로 렌즈를 추가 발주하세요!
         """)
+

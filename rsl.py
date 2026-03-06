@@ -71,8 +71,18 @@ def load_data():
 
 try:
     df = load_data()
-    now = datetime.datetime.now() + datetime.timedelta(hours=9)
-    update_time_str = now.strftime("%m/%d %H:%M")
+    
+    # 💡 구글 시트에 '업데이트시간' 열이 있으면 그 글자를 그대로 가져오고, 없으면 현재 시간을 씁니다.
+    if '업데이트시간' in df.columns:
+        # 데이터가 비어있지 않은 첫 번째 값을 가져옵니다.
+        valid_times = df['업데이트시간'].dropna()
+        if not valid_times.empty:
+            update_time_str = str(valid_times.iloc[0]).strip()
+        else:
+            update_time_str = "업데이트 시간 미상"
+    else:
+        now = datetime.datetime.now() + datetime.timedelta(hours=9)
+        update_time_str = now.strftime("%m/%d %H:%M")
 except:
     st.error("데이터를 불러올 수 없습니다.")
     st.stop()
@@ -228,6 +238,7 @@ elif st.session_state['active_tab'] == "benefit":
             </div>
         </div>
         """, unsafe_allow_html=True)
+
 
 
 

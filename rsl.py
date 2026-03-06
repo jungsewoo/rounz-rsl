@@ -9,17 +9,19 @@ LIMIT_MAP = {"VIP": 15, "GOLD": 10, "SILVER": 25}
 
 st.set_page_config(page_title="2026 3~4월 렌즈프로모션 조회", page_icon="🌸", layout="wide")
 
-# 💡 구글 시트 데이터를 10분 단위로 새로고침하여 가져옵니다.
 @st.cache_data(ttl=600)
 def load_data():
     sheet_url = st.secrets["SHEET_URL"]
-    # 공유 링크를 판다스가 읽을 수 있는 CSV 다운로드 링크로 자동 변환
-    csv_url = sheet_url.replace('/edit?usp=sharing', '/export?format=csv').replace('/edit', '/export?format=csv')
-    return pd.read_csv(csv_url)
+    # 공유 링크를 CSV 다운로드 링크로 자동 변환
+    csv_url = sheet_url.replace('/edit?usp=sharing', '/export?format=csv').replace('/edit', '/edit?format=csv')
+    df = pd.read_csv(csv_url)
+    
+    # 💡 [핵심 추가] 모든 열 제목의 앞뒤 공백을 자동으로 제거합니다.
+    df.columns = [c.strip() for c in df.columns]
+    return df
 
 try:
     df = load_data()
-    # 데이터 업데이트 시간은 구글 시트를 마지막으로 읽어온 시간으로 자동 표시됩니다.
     update_time_str = datetime.datetime.now().strftime("%m월 %d일 %H:%M 기준")
 except Exception as e:
     st.error("⚠️ 구글 시트 데이터를 불러올 수 없습니다. 스트림릿 Secrets 설정이나 시트 공유 상태를 확인해주세요.")
@@ -29,11 +31,13 @@ except Exception as e:
 if '26/03' in df.columns:
     df['26/03'] = df['26/03'].fillna(0)
 
-if '프로모션 기준금액(최근3개월)' not in df.columns:
-    st.error("⚠️ 데이터에 '프로모션 기준금액(최근3개월)' 열이 없습니다.")
+# 💡 제목을 더 유연하게 체크합니다.
+target_col = '프로모션 기준금액(최근3개월)'
+if target_col not in df.columns:
+    st.error(f"⚠️ 데이터에 '{target_col}' 열이 없습니다. 현재 확인된 열 목록: {list(df.columns)}")
     st.stop()
 else:
-    df['프로모션 기준금액(최근3개월)'] = df['프로모션 기준금액(최근3개월)'].fillna(0)
+    df[target_col] = df[target_col].fillna(0)
 
 
 # --- 사이드바 메뉴 ---
@@ -66,7 +70,7 @@ if menu == "📊 우리 매장 실적 조회":
                 store_name = result['매장명'].values[0]
                 grade = result['등급'].values[0]
                 current_amt = int(result['26/03'].values[0])
-                avg_3month = int(result['프로모션 기준금액(최근3개월)'].values[0])
+                avg_3month = int(result[target_col].values[0]) # 변수로 처리
                 
                 grade_df = df[df['등급'] == grade].copy()
                 grade_df['내등급순위'] = grade_df['26/03'].rank(method='min', ascending=False)
@@ -81,7 +85,6 @@ if menu == "📊 우리 매장 실적 조회":
                 
                 st.markdown(f"### 👤 **{store_name}** 원장님 현황")
                 
-                # 게이지바용 퍼센트 및 커스텀 디자인 세팅
                 if target_amt > 0:
                     percent = int((current_amt / target_amt) * 100)
                 else:
@@ -104,7 +107,7 @@ if menu == "📊 우리 매장 실적 조회":
                     
                     st.markdown("---")
                     st.markdown(custom_gauge_html, unsafe_allow_html=True)
-                    st.markdown(f"**🎉 목표 달성! 당첨 합격선을 <span style='color:#00b09b;'>{current_amt - target_amt:,}원</span> 초과했습니다.**", unsafe_allow_html=True)
+                    st.markdown(f"**🎉 목표 달성! 현재 당첨 합격선을 <span style='color:#00b09b;'>{current_amt - target_amt:,}원</span> 초과했습니다.**", unsafe_allow_html=True)
                     st.write("") 
                     
                     col1, col2, col3 = st.columns(3)
@@ -115,7 +118,7 @@ if menu == "📊 우리 매장 실적 조회":
                 elif user_rank <= display_limit:
                     gap = target_amt - current_amt if target_amt > current_amt else 0
                     st.warning(f"🟡 **당첨 가시권! (현재 {grade} {user_rank}위)**")
-                    st.error(f"원장님, 당첨 합격선({target_to}위) 진입까지 딱 **[{gap:,}원]** 모자랍니다! 이번 주 추가 발주 한 번이면 순위가 단번에 뒤집힙니다. 지금 바로 발주하세요!")
+                    st.error(f"원장님, 현재 당첨 합격선({target_to}위) 진입까지 딱 **[{gap:,}원]** 모자랍니다! 이번 주 추가 발주 한 번이면 순위가 단번에 뒤집힙니다. 지금 바로 발주하세요!")
                     
                     st.markdown("---")
                     st.markdown(custom_gauge_html, unsafe_allow_html=True)
@@ -128,8 +131,8 @@ if menu == "📊 우리 매장 실적 조회":
                     col3.metric(f"🛒 3월 발주액 ({update_time_str})", f"{current_amt:,}원")
 
                 else:
-                    st.error(f"🚀 **슈퍼 루키 트랙 (역전의 기회!)**")
-                    st.warning(f"누적 매출 랭킹이 부담스러우신가요? 걱정 마세요! 이번 달 발주를 확 늘려주시면 **[혜택 2: 전월 대비 급성장 트랙]** 당첨이 유력해집니다. 아래 3개월 평균 발주액을 뛰어넘어 보세요!")
+                    st.error(f"🚀 **슈퍼 루키 부문 (역전의 기회!)**")
+                    st.warning(f"누적 매출 랭킹이 부담스러우신가요? 걱정 마세요! 이번 달 발주를 확 늘려주시면 **[혜택 2: 전월 대비 급성장 부문]** 당첨이 유력해집니다. 아래 3개월 평균 발주액을 뛰어넘어 보세요!")
                     
                     st.markdown("---")
                     col1, col2, col3 = st.columns(3)
@@ -141,7 +144,7 @@ if menu == "📊 우리 매장 실적 조회":
                 st.error("⚠️ 일치하는 매장 정보가 없습니다. 사업자번호를 다시 확인해 주세요.")
 
 # ==========================================
-# [메뉴 2] 프로모션 상세 혜택 안내 화면
+# [메뉴 2] 프로모션 혜택 안내 화면
 # ==========================================
 elif menu == "🎁 프로모션 혜택 안내":
     st.markdown("### 🚨 네이버 지역 광고, 라운즈가 쏩니다!")
@@ -158,11 +161,8 @@ elif menu == "🎁 프로모션 혜택 안내":
     
     st.markdown("""
     * **1. 네이버 상단 노출 무료 (2개월)**
-        * 원장님 매장을 네이버 검색 맨 위에 띄워드립니다. (비용은 라운즈가 냅니다!)
     * **2. 플레이스 완벽 세팅**
-        * 동네 고객이 찾아오도록 네이버 지도 세팅을 전문가가 싹 고쳐드립니다.
     * **3. 1:1 전담 마케터 배정**
-        * 궁금한 점은 언제든 다이렉트로 물어보세요.
     """)
     
     st.markdown("---")
@@ -172,11 +172,8 @@ elif menu == "🎁 프로모션 혜택 안내":
     
     st.markdown("""
     * **1. 네이버 상단 노출 광고 대행 (무료 대행)**
-        * 원장님 매장을 검색 상단에 띄우기 위한 광고 세팅과 운영을 본사가 무료로 대행해 드립니다. (광고 실비만 직접 충전)
     * **2. 플레이스 완벽 세팅 (무료)**
-        * 우리 매장이 상단에 잘 노출될 수 있도록 지도 세팅을 전문가가 고쳐드립니다.
     * **3. 1:1 전담 마케터 배정**
-        * 세팅부터 광고 효율 관리까지 꼼꼼하게 컨설팅해 드립니다.
     """)
     
     st.markdown("---")    

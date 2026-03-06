@@ -135,18 +135,24 @@ with tabs[0]:
                 
                 st.markdown("---")
                 
-                # 💳 그리드 데이터 (조건부 노출 로직 반영)
+                # 💳 [1번 로직] 그리드 데이터 (조건부 노출 반영)
                 col1, col2, col3 = st.columns(3)
+                
                 with col1:
+                    # 등급 정보는 공통으로 노출합니다.
                     st.markdown(f'<div class="p-card"><div class="p-label">위탁 등급</div><div class="p-value">{grade}</div></div>', unsafe_allow_html=True)
+                
                 with col2:
-                    # 루키 매장(순위 밖)만 3개월 평균액 노출, 나머지는 합격선 노출
+                    # 💡 순위에 따른 차등 노출: 루키(순위 밖)는 평균액, 나머지는 합격선 노출
                     if user_rank > display_limit:
                         label, val = "나의 3개월 평균", avg_3month
                     else:
                         label, val = f"당첨 합격선({target_to}위)", target_amt
+                    
                     st.markdown(f'<div class="p-card"><div class="p-label">{label}</div><div class="p-value">{val:,}원</div></div>', unsafe_allow_html=True)
+                
                 with col3:
+                    # 현재 실적 정보는 공통으로 노출합니다.
                     st.markdown(f'<div class="p-card"><div class="p-label">3월 발주액({update_time_str})</div><div class="p-value">{current_amt:,}원</div></div>', unsafe_allow_html=True)
 
                 st.write("")
@@ -193,6 +199,7 @@ with tabs[1]:
         
         달성 혜택 2 : 규모와 상관없이, 이번 달 발주 성장이 가장 뚜렷한 매장을 '슈퍼 루키'로 선정합니다.(**전월 대비 급성장**)
         """)
+
 
 
 

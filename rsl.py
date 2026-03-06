@@ -73,15 +73,30 @@ st.markdown(f'''
     </div>
 ''', unsafe_allow_html=True)
 
-# --- 5. 내비게이션 (Tabs) ---
-tab_titles = ["📊 프로모션 달성 확인하기", "🎁 달성 혜택 안내"]
-# 세션 상태에 따라 탭 활성화
-tabs = st.tabs(tab_titles)
+# --- 5. 내비게이션 (Tabs 대신 State 기반으로 변경) ---
+# 💡 버튼 클릭으로 화면을 전환하기 위해 세션 상태를 사용합니다.
+if 'active_tab' not in st.session_state:
+    st.session_state['active_tab'] = "check"
+
+# 상단 메뉴 구성 (클릭 시 페이지 전환)
+col_nav1, col_nav2 = st.columns(2)
+with col_nav1:
+    if st.button("📊 프로모션 달성 확인하기", use_container_width=True, 
+                 type="primary" if st.session_state['active_tab'] == "check" else "secondary"):
+        st.session_state['active_tab'] = "check"
+        st.rerun()
+with col_nav2:
+    if st.button("🎁 달성 혜택 안내", use_container_width=True,
+                 type="primary" if st.session_state['active_tab'] == "benefit" else "secondary"):
+        st.session_state['active_tab'] = "benefit"
+        st.rerun()
+
+st.markdown("---")
 
 # ==========================================
-# [탭 1] 프로모션 달성 확인하기
+# [화면 1] 프로모션 달성 확인하기
 # ==========================================
-with tabs[0]:
+if st.session_state['active_tab'] == "check":
     user_input = st.text_input("🏢 사업자번호 입력", placeholder="안경원 사업자번호를 숫자만 입력해주세요 ", key="search_bar", label_visibility="collapsed")
     
     if st.button("조회하기", use_container_width=True):
@@ -91,7 +106,7 @@ with tabs[0]:
             
             if not result.empty:
                 r = result.iloc[0]
-                store_display_name = f"{r['매장명']} 안경원"
+                store_display_name = f"{r['매장명']} 안경원" # '원장님'에서 '안경원'으로 예우
                 grade = r['등급']
                 current_amt = int(r['26/03'])
                 target_col = '프로모션 기준금액(최근3개월)'
@@ -135,38 +150,32 @@ with tabs[0]:
                 
                 st.markdown("---")
                 
-                # 💳 [1번 로직] 그리드 데이터 (조건부 노출 반영)
+                # 💳 그리드 데이터 (조건부 노출 반영)
                 col1, col2, col3 = st.columns(3)
-                
                 with col1:
-                    # 등급 정보는 공통으로 노출합니다.
                     st.markdown(f'<div class="p-card"><div class="p-label">위탁 등급</div><div class="p-value">{grade}</div></div>', unsafe_allow_html=True)
-                
                 with col2:
-                    # 💡 순위에 따른 차등 노출: 루키(순위 밖)는 평균액, 나머지는 합격선 노출
                     if user_rank > display_limit:
                         label, val = "나의 3개월 평균", avg_3month
                     else:
                         label, val = f"당첨 합격선({target_to}위)", target_amt
-                    
                     st.markdown(f'<div class="p-card"><div class="p-label">{label}</div><div class="p-value">{val:,}원</div></div>', unsafe_allow_html=True)
-                
                 with col3:
-                    # 현재 실적 정보는 공통으로 노출합니다.
                     st.markdown(f'<div class="p-card"><div class="p-label">3월 발주액({update_time_str})</div><div class="p-value">{current_amt:,}원</div></div>', unsafe_allow_html=True)
 
                 st.write("")
-                # 💡 [핵심] 하단 혜택 페이지 이동 가이드
-                st.info("💡 지금 바로 상단의 **[🎁 달성 혜택 안내]** 탭을 클릭하여 우리 매장이 받을 수 있는 상세 혜택을 확인하세요!")
-                if st.button("🎁 이번 달 상세 혜택 보러가기", on_click=change_tab, use_container_width=True):
-                    pass
+                # 💡 [해결 포인트] 버튼 클릭 시 세션 상태를 변경하여 페이지 이동
+                st.info("💡 지금 바로 상세 혜택을 확인해 보세요!")
+                if st.button("🎁 이번 달 상세 혜택 보러가기", use_container_width=True):
+                    st.session_state['active_tab'] = "benefit"
+                    st.rerun()
             else:
                 st.error("사업자번호를 정확히 입력했는지 확인해 주세요.")
 
 # ==========================================
-# [탭 2] 달성 혜택 안내 (내용 원복)
+# [화면 2] 달성 혜택 안내
 # ==========================================
-with tabs[1]:
+elif st.session_state['active_tab'] == "benefit":
     st.markdown("#### **🏆 구간별 달성 혜택 상세**")
     st.write("")
     
@@ -195,10 +204,11 @@ with tabs[1]:
     st.markdown("---")
     with st.expander("📌 당첨 및 선정 기준 상세 가이드"):
         st.markdown("""
-        달성 혜택 1 : 꾸준히 많은 발주를 기록 중인 매장을 등급별 상위 T/O에 맞춰 선정합니다.(**누적 실적 랭킹**)
+        **달성 혜택 1** : 꾸준히 많은 발주를 기록 중인 매장을 등급별 상위 T/O에 맞춰 선정합니다.(**누적 실적 랭킹**)
         
-        달성 혜택 2 : 규모와 상관없이, 이번 달 발주 성장이 가장 뚜렷한 매장을 '슈퍼 루키'로 선정합니다.(**전월 대비 급성장**)
+        **달성 혜택 2** : 규모와 상관없이, 이번 달 발주 성장이 가장 뚜렷한 매장을 '슈퍼 루키'로 선정합니다.(**전월 대비 급성장**)
         """)
+
 
 
 

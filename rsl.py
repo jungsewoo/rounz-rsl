@@ -9,44 +9,41 @@ NAVER_GREEN = "#03C75A"
 
 st.set_page_config(page_title="2026 라운즈 프로모션", page_icon="🔍", layout="centered")
 
-# --- 2. 프리미엄 CSS (헤더 및 탭 디자인 완벽 커스텀) ---
+# --- 2. 프리미엄 CSS (폰트 강제 통일 및 헤더 정렬 완벽 개선) ---
 st.markdown(f"""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap');
-    html, body, [class*="css"] {{ font-family: 'Pretendard', sans-serif; line-height: 1.5; color: #333; }}
+    /* 안정적인 폰트 로드를 위해 공식 CDN 사용 */
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
     
-    /* 💡 개선된 헤더 및 아이콘 */
+    /* 💡 화면 내 모든 요소의 폰트를 하나로 통일하여 '결'을 맞춤 */
+    html, body, [class*="css"], div, span, p, h1, h2, h3, h4, h5, h6, ul, li, button {{ 
+        font-family: 'Pretendard', -apple-system, sans-serif !important; 
+        line-height: 1.5; 
+        color: #333; 
+    }}
+    
+    /* 💡 개선된 헤더 레이아웃 (줄 맞춤 및 크기 확대) */
     .header-container {{ padding: 15px 0 25px 0; border-bottom: 2px solid {NAVER_GREEN}; margin-bottom: 25px; }}
-    .sub-title {{ font-size: 15px; font-weight: 700; color: {NAVER_GREEN}; margin-bottom: 8px; letter-spacing: -0.5px; }}
-    .main-title {{ font-size: 24px; font-weight: 800; color: #111; line-height: 1.35; letter-spacing: -0.5px; }}
-    .naver-logo {{ font-size: 28px; font-weight: 900; color: {NAVER_GREEN}; vertical-align: baseline; margin-right: 6px; }}
+    .sub-title {{ font-size: 19px; font-weight: 800; color: #111; margin-bottom: 12px; letter-spacing: -0.5px; }}
     
-    /* 💡 빨간 버튼을 완벽한 탭 디자인으로 변경하는 마법 */
+    /* N 로고와 텍스트의 줄을 완벽하게 맞추기 위한 Flexbox */
+    .title-flex-box {{ display: flex; align-items: flex-start; gap: 8px; }}
+    .naver-logo {{ font-size: 30px; font-weight: 900; color: {NAVER_GREEN}; line-height: 1.2; }}
+    .main-title-text {{ font-size: 26px; font-weight: 800; color: #111; line-height: 1.35; letter-spacing: -1px; word-break: keep-all; }}
+    
+    /* 탭(버튼) 디자인 커스텀 */
     div[data-testid="column"] div.stButton > button {{
-        border-radius: 8px 8px 0 0 !important;
-        height: 50px;
-        font-weight: 600;
-        font-size: 16px;
-        background-color: #F8F9FA !important;
-        color: #868E96 !important;
-        border: 1px solid #EAECEF !important;
-        border-bottom: 2px solid #EAECEF !important;
-        transition: all 0.2s;
+        border-radius: 8px 8px 0 0 !important; height: 50px; font-weight: 600; font-size: 16px;
+        background-color: #F8F9FA !important; color: #868E96 !important;
+        border: 1px solid #EAECEF !important; border-bottom: 2px solid #EAECEF !important; transition: all 0.2s;
     }}
-    /* 활성화된 탭(Primary) 스타일: 네이버 그린 포인트 */
     div[data-testid="column"] div.stButton > button[kind="primary"] {{
-        background-color: #FFFFFF !important;
-        color: {NAVER_GREEN} !important;
-        border: 1px solid #EAECEF !important;
-        border-bottom: 3px solid {NAVER_GREEN} !important;
-        font-weight: 800;
-    }}
-    div[data-testid="column"] div.stButton > button:hover {{
-        color: {NAVER_GREEN} !important;
+        background-color: #FFFFFF !important; color: {NAVER_GREEN} !important;
+        border: 1px solid #EAECEF !important; border-bottom: 3px solid {NAVER_GREEN} !important; font-weight: 800;
     }}
     
-    /* 프리미엄 카드 */
-    .p-card {{ background: white; padding: 20px; border-radius: 12px; border: 1px solid #EAECEF; box-shadow: 0 2px 8px rgba(0,0,0,0.02); margin-bottom: 15px; }}
+    /* 프리미엄 혜택 카드 */
+    .p-card {{ background: white; padding: 22px; border-radius: 12px; border: 1px solid #EAECEF; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 15px; }}
     .p-label {{ font-size: 13px; color: #888; font-weight: 600; margin-bottom: 5px; }}
     .p-value {{ font-size: 22px; font-weight: 800; color: #111; }}
     
@@ -86,12 +83,13 @@ except:
     st.error("데이터를 불러올 수 없습니다.")
     st.stop()
 
-# --- 4. 💡 개선된 메인 헤더 ---
+# --- 4. 💡 개선된 메인 헤더 (구조 변경) ---
 st.markdown(f'''
     <div class="header-container">
         <div class="sub-title">🌸 라운즈 3~4월 렌즈 프로모션</div>
-        <div class="main-title">
-            <span class="naver-logo">N</span>네이버 지역광고 상단노출,<br/>라운즈에서 해드립니다.
+        <div class="title-flex-box">
+            <div class="naver-logo">N</div>
+            <div class="main-title-text">네이버 지역광고 상단노출,<br/>라운즈에서 해드립니다.</div>
         </div>
     </div>
 ''', unsafe_allow_html=True)
@@ -99,7 +97,7 @@ st.markdown(f'''
 # --- 5. 내비게이션 (진짜 탭처럼 보이게 디자인된 버튼) ---
 col_nav1, col_nav2 = st.columns(2)
 with col_nav1:
-    if st.button("📊 달성 내역 확인", use_container_width=True, type="primary" if st.session_state['active_tab'] == "check" else "secondary"):
+    if st.button("📊 프로모션 달성 확인하기", use_container_width=True, type="primary" if st.session_state['active_tab'] == "check" else "secondary"):
         st.session_state['active_tab'] = "check"
         st.rerun()
 with col_nav2:
@@ -166,7 +164,7 @@ if st.session_state['active_tab'] == "check":
                 
                 st.markdown("---")
                 
-                # 💳 조건부 노출 데이터 카드
+                # 💳 조건부 데이터 노출
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     st.markdown(f'<div class="p-card"><div class="p-label">위탁 등급</div><div class="p-value">{grade}</div></div>', unsafe_allow_html=True)

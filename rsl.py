@@ -9,12 +9,11 @@ NAVER_GREEN = "#03C75A"
 
 st.set_page_config(page_title="2026 라운즈 프로모션", page_icon="🔍", layout="centered")
 
-# --- 2. 프리미엄 CSS (폰트 충돌 해결 및 레이아웃 안정화) ---
+# --- 2. 프리미엄 CSS (폰트 및 레이아웃 안정화) ---
 st.markdown(f"""
     <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
     
-    /* 💡 아이콘 깨짐 방지: 너무 강제적인 폰트 적용을 빼고 안전하게 적용 */
     html, body, [class*="css"] {{ font-family: 'Pretendard', -apple-system, sans-serif; line-height: 1.5; color: #333; }}
     
     /* 메인 헤더 레이아웃 */
@@ -147,13 +146,15 @@ if st.session_state['active_tab'] == "check":
                 </div>
                 """, unsafe_allow_html=True)
 
+                # 💡 [핵심 개선] 상위권은 등수 노출, 하위권(루키)은 등수 숨김 및 독려 멘트 출력
                 if user_rank <= target_to:
                     st.success(f"🏆 현재 **{grade} 등급 {user_rank}위** | **[달성 혜택 1]** 안정권")
                     st.markdown(f"합격선 대비 **{current_amt - target_amt:,}원** 초과 달성 중입니다.")
                 elif user_rank <= display_limit:
                     st.warning(f"🎯 현재 **{grade} 등급 {user_rank}위** | **[달성 혜택 1]** 진입까지 **{target_amt - current_amt:,}원**")
                 else:
-                    st.error(f"🚀 현재 **{grade} 등급 {user_rank}위** | **[달성 혜택 2]** 집중 공략 구간")
+                    st.error(f"🚀 **[달성 혜택 2] 슈퍼 루키 특별 공략 구간**")
+                    st.info("💡 **누적 랭킹이 부담스러우신가요? 걱정 마세요!**\n\n나의 **3개월 평균 발주액**을 뛰어넘어 이번 달 가장 높은 성장률을 보여주시면 **[혜택 2: 스탠다드 패키지]**의 주인공이 되실 수 있습니다. 지금 바로 추가 발주하세요!")
                 
                 st.markdown("---")
                 

@@ -9,29 +9,24 @@ NAVER_GREEN = "#03C75A"
 
 st.set_page_config(page_title="2026 라운즈 프로모션", page_icon="🔍", layout="centered")
 
-# --- 2. 프리미엄 CSS (폰트 강제 통일 및 헤더 정렬 완벽 개선) ---
+# --- 2. 프리미엄 CSS (폰트 충돌 해결 및 레이아웃 안정화) ---
 st.markdown(f"""
     <style>
-    /* 안정적인 폰트 로드를 위해 공식 CDN 사용 */
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
     
-    /* 💡 화면 내 모든 요소의 폰트를 하나로 통일하여 '결'을 맞춤 */
-    html, body, [class*="css"], div, span, p, h1, h2, h3, h4, h5, h6, ul, li, button {{ 
-        font-family: 'Pretendard', -apple-system, sans-serif !important; 
-        line-height: 1.5; 
-        color: #333; 
-    }}
+    /* 💡 아이콘 깨짐 방지: 너무 강제적인 폰트 적용을 빼고 안전하게 적용 */
+    html, body, [class*="css"] {{ font-family: 'Pretendard', -apple-system, sans-serif; line-height: 1.5; color: #333; }}
     
-    /* 💡 개선된 헤더 레이아웃 (줄 맞춤 및 크기 확대) */
+    /* 메인 헤더 레이아웃 */
     .header-container {{ padding: 15px 0 25px 0; border-bottom: 2px solid {NAVER_GREEN}; margin-bottom: 25px; }}
     .sub-title {{ font-size: 19px; font-weight: 800; color: #111; margin-bottom: 12px; letter-spacing: -0.5px; }}
     
-    /* N 로고와 텍스트의 줄을 완벽하게 맞추기 위한 Flexbox */
+    /* 로고와 텍스트 줄 맞춤 */
     .title-flex-box {{ display: flex; align-items: flex-start; gap: 8px; }}
     .naver-logo {{ font-size: 30px; font-weight: 900; color: {NAVER_GREEN}; line-height: 1.2; }}
     .main-title-text {{ font-size: 26px; font-weight: 800; color: #111; line-height: 1.35; letter-spacing: -1px; word-break: keep-all; }}
     
-    /* 탭(버튼) 디자인 커스텀 */
+    /* 탭(버튼) 커스텀 */
     div[data-testid="column"] div.stButton > button {{
         border-radius: 8px 8px 0 0 !important; height: 50px; font-weight: 600; font-size: 16px;
         background-color: #F8F9FA !important; color: #868E96 !important;
@@ -42,7 +37,7 @@ st.markdown(f"""
         border: 1px solid #EAECEF !important; border-bottom: 3px solid {NAVER_GREEN} !important; font-weight: 800;
     }}
     
-    /* 프리미엄 혜택 카드 */
+    /* 혜택 카드 및 그리드 데이터 */
     .p-card {{ background: white; padding: 22px; border-radius: 12px; border: 1px solid #EAECEF; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 15px; }}
     .p-label {{ font-size: 13px; color: #888; font-weight: 600; margin-bottom: 5px; }}
     .p-value {{ font-size: 22px; font-weight: 800; color: #111; }}
@@ -83,7 +78,7 @@ except:
     st.error("데이터를 불러올 수 없습니다.")
     st.stop()
 
-# --- 4. 💡 개선된 메인 헤더 (구조 변경) ---
+# --- 4. 메인 헤더 ---
 st.markdown(f'''
     <div class="header-container">
         <div class="sub-title">🌸 라운즈 3~4월 렌즈 프로모션</div>
@@ -94,7 +89,7 @@ st.markdown(f'''
     </div>
 ''', unsafe_allow_html=True)
 
-# --- 5. 내비게이션 (진짜 탭처럼 보이게 디자인된 버튼) ---
+# --- 5. 내비게이션 (진짜 탭 버튼) ---
 col_nav1, col_nav2 = st.columns(2)
 with col_nav1:
     if st.button("📊 프로모션 달성 확인하기", use_container_width=True, type="primary" if st.session_state['active_tab'] == "check" else "secondary"):
@@ -126,7 +121,6 @@ if st.session_state['active_tab'] == "check":
                 target_col = '프로모션 기준금액(최근3개월)'
                 avg_3month = int(r[target_col])
                 
-                # 순위 로직
                 grade_df = df[df['등급'] == grade].copy()
                 grade_df['rank'] = grade_df['26/03'].rank(method='min', ascending=False)
                 user_rank = int(grade_df[grade_df['사업자번호'] == search_num]['rank'].values[0])
@@ -139,7 +133,6 @@ if st.session_state['active_tab'] == "check":
                 
                 st.markdown(f"### **{store_display_name}**")
                 
-                # 게이지바
                 percent = int((current_amt / target_amt) * 100) if target_amt > 0 else 100
                 display_percent = min(percent, 100)
                 bar_color = NAVER_GREEN if percent >= 100 else "#FF5252"
@@ -164,7 +157,6 @@ if st.session_state['active_tab'] == "check":
                 
                 st.markdown("---")
                 
-                # 💳 조건부 데이터 노출
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     st.markdown(f'<div class="p-card"><div class="p-label">위탁 등급</div><div class="p-value">{grade}</div></div>', unsafe_allow_html=True)
@@ -214,9 +206,20 @@ elif st.session_state['active_tab'] == "benefit":
     """, unsafe_allow_html=True)
     
     st.markdown("---")
+    
+    # 💡 깨짐 현상을 복구하고, 내부 텍스트를 고급스러운 배지형 리스트로 변경
     with st.expander("📌 당첨 및 선정 기준 상세 가이드"):
-        st.markdown("""
-        **달성 혜택 1** : 꾸준히 많은 발주를 기록 중인 매장을 등급별 상위 T/O에 맞춰 선정합니다. (**누적 실적 랭킹**)
-        
-        **달성 혜택 2** : 규모와 상관없이, 이번 달 발주 성장이 가장 뚜렷한 매장을 '슈퍼 루키'로 선정합니다. (**전월 대비 급성장**)
-        """)
+        st.markdown(f"""
+        <div style="padding: 5px 0;">
+            <div style="margin-bottom: 20px;">
+                <span style="background-color: #E8F5E9; color: {NAVER_GREEN}; padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 13px; margin-right: 8px;">달성 혜택 1</span>
+                <span style="font-weight: 800; color: #111; font-size: 15px;">누적 실적 랭킹</span>
+                <p style="margin-top: 8px; font-size: 14px; color: #555; line-height: 1.6; word-break: keep-all;">꾸준히 많은 발주를 기록 중인 매장을 등급별 상위 T/O에 맞춰 선정합니다.</p>
+            </div>
+            <div>
+                <span style="background-color: #E6F0FF; color: #2E5BFF; padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 13px; margin-right: 8px;">달성 혜택 2</span>
+                <span style="font-weight: 800; color: #111; font-size: 15px;">전월 대비 급성장</span>
+                <p style="margin-top: 8px; font-size: 14px; color: #555; line-height: 1.6; word-break: keep-all;">규모와 상관없이, 이번 달 발주 성장이 가장 뚜렷한 매장을 <b style="color:#2E5BFF;">'슈퍼 루키'</b>로 선정합니다.</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)

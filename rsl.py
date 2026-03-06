@@ -69,7 +69,7 @@ except:
 st.markdown(f'''
     <div class="header-container">
         <span class="naver-logo">N</span>
-        <div class="main-title">네이버 지역광고 상단노출,<br/>라운즈에서 해드립니다.</div>
+        <div class="main-title">라운즈 3~4월 렌즈 프로모션 <br/>네이버 지역광고 상단노출,라운즈에서 해드립니다.</div>
     </div>
 ''', unsafe_allow_html=True)
 
@@ -193,6 +193,7 @@ with tabs[1]:
         
         달성 혜택 2 : 규모와 상관없이, 이번 달 발주 성장이 가장 뚜렷한 매장을 '슈퍼 루키'로 선정합니다.(**전월 대비 급성장**)
         """)
+
 
 
 

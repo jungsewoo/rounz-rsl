@@ -90,7 +90,7 @@ except:
 # --- 4. 메인 헤더 ---
 st.markdown(f'''
     <div class="header-container">
-        <div class="sub-title">🌸 라운즈 3~4월 렌즈 프로모션</div>
+        <div class="sub-title">🌸 라운즈 3~4월 렌즈 프로모션(한샘렌즈 포함)</div>
         <div class="title-flex-box">
             <div class="naver-logo">N</div>
             <div class="main-title-text">네이버 지역광고 상단노출,<br/>라운즈에서 해드립니다.</div>
@@ -238,15 +238,16 @@ elif st.session_state['active_tab'] == "benefit":
             <div style="margin-bottom: 20px;">
                 <span style="background-color: #E8F5E9; color: {NAVER_GREEN}; padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 13px; margin-right: 8px;">달성 혜택 1</span>
                 <span style="font-weight: 800; color: #111; font-size: 15px;">누적 실적 랭킹</span>
-                <p style="margin-top: 8px; font-size: 14px; color: #555; line-height: 1.6; word-break: keep-all;">꾸준히 많은 발주를 기록 중인 매장을 등급별 상위 T/O에 맞춰 선정합니다.</p>
+                <p style="margin-top: 8px; font-size: 14px; color: #555; line-height: 1.6; word-break: keep-all;">꾸준히 많은 발주를 기록 중인 매장을 등급별 상위 T/O에 맞춰 선정합니다.(한샘렌즈 포함)</p>
             </div>
             <div>
                 <span style="background-color: #E6F0FF; color: #2E5BFF; padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 13px; margin-right: 8px;">달성 혜택 2</span>
                 <span style="font-weight: 800; color: #111; font-size: 15px;">전월 대비 급성장</span>
-                <p style="margin-top: 8px; font-size: 14px; color: #555; line-height: 1.6; word-break: keep-all;">규모와 상관없이, 이번 달 발주 성장이 가장 뚜렷한 매장을 <b style="color:#2E5BFF;">'슈퍼 루키'</b>로 선정합니다.</p>
+                <p style="margin-top: 8px; font-size: 14px; color: #555; line-height: 1.6; word-break: keep-all;">규모와 상관없이, 이번 달 발주 성장이 가장 뚜렷한 매장을 <b style="color:#2E5BFF;">'슈퍼 루키'</b>로 선정합니다.(한샘렌즈 포함)</p>
             </div>
         </div>
         """, unsafe_allow_html=True)
+
 
 
 

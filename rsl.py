@@ -119,7 +119,7 @@ with streamlit_analytics.track():
     # [화면 1] 프로모션 달성 확인하기
     # ==========================================
     if st.session_state['active_tab'] == "check":
-        user_input = st.text_input("🏢 사업자번호 입력", placeholder="안경원 사업자번호를 숫자만 입력해주세요", key="search_bar", label_visibility="collapsed")
+        user_input = st.text_input("🏢 사업자번호 입력", placeholder="안경원 사업자번호를 숫자만 입력해주세요(예 : 1234567890)", key="search_bar", label_visibility="collapsed")
         
         if st.button("조회하기", use_container_width=True):
             if user_input:

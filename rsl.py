@@ -44,6 +44,7 @@ with streamlit_analytics.track():
         .p-card {{ background: white; padding: 22px; border-radius: 12px; border: 1px solid #EAECEF; box-shadow: 0 4px 10px rgba(0,0,0,0.03); margin-bottom: 15px; }}
         .p-label {{ font-size: 13px; color: #888; font-weight: 600; margin-bottom: 5px; }}
         .p-value {{ font-size: 22px; font-weight: 800; color: #111; }}
+        .p-sub-value {{ font-size: 12px; font-weight: 500; color: #666; margin-top: 6px; letter-spacing: -0.3px; }}
         
         /* 게이지바 */
         .gauge-bg {{ width: 100%; background: #F1F3F5; border-radius: 50px; height: 16px; margin: 15px 0; overflow: hidden; }}
@@ -65,10 +66,20 @@ with streamlit_analytics.track():
         df = pd.read_csv(csv_url)
         df.columns = [c.strip() for c in df.columns]
         target_col = '프로모션 기준금액(최근3개월)'
-        for col in ['26/03', target_col]:
+        
+        # 💡 3월, 4월 데이터 모두 숫자로 변환
+        for col in ['26/03', '26/04', target_col]:
             if col in df.columns:
                 df[col] = df[col].astype(str).str.replace(',', '').str.replace('원', '').str.strip()
                 df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
+        
+        # 4월 열이 아직 없을 경우 에러 방지용으로 0 채움
+        if '26/04' not in df.columns:
+            df['26/04'] = 0
+            
+        # 💡 3~4월 합산 컬럼 생성
+        df['total_amt'] = df['26/03'] + df['26/04']
+        
         if '사업자번호' in df.columns:
             df['사업자번호'] = df['사업자번호'].astype(str).str.replace('-', '', regex=False).str.strip()
         return df
@@ -78,7 +89,6 @@ with streamlit_analytics.track():
         
         # 💡 구글 시트에 '업데이트시간' 열이 있으면 그 글자를 그대로 가져오고, 없으면 현재 시간을 씁니다.
         if '업데이트시간' in df.columns:
-            # 데이터가 비어있지 않은 첫 번째 값을 가져옵니다.
             valid_times = df['업데이트시간'].dropna()
             if not valid_times.empty:
                 update_time_str = str(valid_times.iloc[0]).strip()
@@ -130,31 +140,34 @@ with streamlit_analytics.track():
                     r = result.iloc[0]
                     store_display_name = f"{r['매장명']} 안경원"
                     grade = r['등급']
-                    current_amt = int(r['26/03'])
+                    
+                    # 💡 실적 변수 세팅 (개별 및 합산)
+                    amt_03 = int(r['26/03'])
+                    amt_04 = int(r['26/04'])
+                    current_amt = int(r['total_amt']) # 3~4월 누적
                     target_col = '프로모션 기준금액(최근3개월)'
                     avg_3month = int(r[target_col])
                     
+                    # 💡 합산 실적(total_amt) 기준으로 랭킹 연산
                     grade_df = df[df['등급'] == grade].copy()
-                    grade_df['rank'] = grade_df['26/03'].rank(method='min', ascending=False)
+                    grade_df['rank'] = grade_df['total_amt'].rank(method='min', ascending=False)
                     user_rank = int(grade_df[grade_df['사업자번호'] == search_num]['rank'].values[0])
                     target_to = TO_MAP.get(grade, 10)
                     display_limit = LIMIT_MAP.get(grade, 25)
                     
-                    grade_sorted = grade_df.sort_values(by='26/03', ascending=False).reset_index(drop=True)
+                    grade_sorted = grade_df.sort_values(by='total_amt', ascending=False).reset_index(drop=True)
                     target_idx = min(target_to, len(grade_sorted)) - 1
-                    target_amt = int(grade_sorted.loc[target_idx, '26/03'])
+                    target_amt = int(grade_sorted.loc[target_idx, 'total_amt'])
                     
                     st.markdown(f"### **{store_display_name}**")
                     
-                    # 💡 [디테일 끝판왕] 마이너스, 0원, 1원 이상 발주를 완벽하게 분리
                     if current_amt < 0:
-                        st.warning("🚨 **이전 반품/취소 내역이 반영되어 현재 3월 순수 발주액이 마이너스(-) 상태입니다.**\n\n추가 발주를 통해 실적을 플러스로 전환하시고 혜택 당첨의 주인공이 되어보세요!")
+                        st.warning("🚨 **이전 반품/취소 내역이 반영되어 현재 누적 발주액이 마이너스(-) 상태입니다.**\n\n추가 발주를 통해 실적을 플러스로 전환하시고 혜택 당첨의 주인공이 되어보세요!")
                         
                     elif current_amt == 0:
-                        st.info("💡 **아직 3월 렌즈 발주 내역이 없습니다.**\n\n지금 바로 첫 발주를 시작하고 네이버 지역광고 상단노출 혜택을 잡아보세요!")
+                        st.info("💡 **아직 3~4월 렌즈 발주 내역이 없습니다.**\n\n지금 바로 발주를 시작하고 네이버 지역광고 상단노출 혜택을 잡아보세요!")
                         
                     else:
-                        # 1원이라도 발주한 정상 매장 로직 (기존과 동일)
                         percent = int((current_amt / target_amt) * 100) if target_amt > 0 else 100
                         display_percent = min(percent, 100)
                         bar_color = NAVER_GREEN if percent >= 100 else "#FF5252"
@@ -173,7 +186,7 @@ with streamlit_analytics.track():
                             st.success(f"🏆 현재 **{grade} 등급 {user_rank}위** | **[달성 혜택 1]** 안정권")
                             st.markdown(f"커트라인 대비 **{current_amt - target_amt:,}원** 초과 달성 중입니다.")
                         elif user_rank <= display_limit:
-                            st.warning(f"🎯 현재 **{grade} 등급 {user_rank}위** | **[달성 혜택 1]** 커트라인 진입까지 **{target_amt - current_amt:,}원**")
+                            st.warning(f"🎯 현재 **{grade} 등급 {user_rank}위** | **[달성 혜택 1]** 커트라인 진입까지 **{target_amt - current_amt:,}원** 남았습니다.")
                         else:
                             st.error(f"🚀 **[달성 혜택 2] 슈퍼 루키 특별 공략 구간**")
                             st.info("💡 **누적 랭킹이 부담스러우신가요? 걱정 마세요!**\n\n나의 **3개월 평균 발주액**을 뛰어넘어 이번 달 가장 높은 성장률을 보여주시면 **[혜택 2: 스탠다드 패키지]**의 주인공이 되실 수 있습니다. 지금 바로 추가 발주하세요!")
@@ -190,11 +203,18 @@ with streamlit_analytics.track():
                             label, val = f"혜택 달성 커트라인({target_to}위)", target_amt
                         st.markdown(f'<div class="p-card"><div class="p-label">{label}</div><div class="p-value">{val:,}원</div></div>', unsafe_allow_html=True)
                     with col3:
-                        st.markdown(f'<div class="p-card"><div class="p-label">3월 발주액({update_time_str})</div><div class="p-value">{current_amt:,}원</div></div>', unsafe_allow_html=True)
+                        # 💡 3번 카드 UI 수정: 총액 메인 + 개별 월 서브 노출
+                        st.markdown(f'''
+                        <div class="p-card">
+                            <div class="p-label">3~4월 누적 발주액({update_time_str})</div>
+                            <div class="p-value">{current_amt:,}원</div>
+                            <div class="p-sub-value">(3월: {amt_03:,}원 / 4월: {amt_04:,}원)</div>
+                        </div>
+                        ''', unsafe_allow_html=True)
     
                     st.write("")
                     st.info("💡 지금 바로 하단의 버튼을 눌러 우리 매장이 받을 수 있는 상세 혜택을 확인하세요!")
-                    if st.button("🎁 이번 달 상세 혜택 보러가기", on_click=go_to_benefit, use_container_width=True):
+                    if st.button("🎁 상세 혜택 보러가기", on_click=go_to_benefit, use_container_width=True):
                         pass
                 else:
                     st.error("사업자번호를 정확히 입력했는지 확인해 주세요.")
@@ -251,8 +271,6 @@ with streamlit_analytics.track():
                 </div>
             </div>
             """, unsafe_allow_html=True)
-
-
 
 
 
